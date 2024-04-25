@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'myapp/styles.css' %}">
+    <title>Minimalist Homepage</title>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/">About</a></li>
+                <li><a href="/">Contact</a></li>
+                <li class="accountDash"><a href="/accounts/login/">Account</a></li>
+            </ul>
+        </nav>
+    </header>
+                    <li class="dropdown">
+                    <a href="#" class="dropbtn">Users</a>
+                    <div class="dropdown-content">
+                        {% for user in currentUsers %}
+                            <a href="/dashboard/">{{ user.username }}</a>
+                        {% endfor %}
+                    </div>
+                </li>
+    <main>
+        <section class="intro">
+            <h1>Welcome to Our Website</h1>
+            <p>Discover the beauty of simplicity.</p>
+            <a href="/create_account/" class="button">Create Account</a>
+        </section>
+        <section class="gallery">
+            <div class="image">
+                <div class="subtext">Explore the world</div>
+            </div>
+            <div class="image">
+                <div class="subtext">Find your inspiration</div>
+            </div>
+            <div class="image">
+                <div class="subtext">Experience tranquility</div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
