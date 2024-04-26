@@ -25,8 +25,8 @@ urlpatterns = [
     path('dashboard/', views.get_dashboard, name='get_dashboard'),
     path('get_stock_data/', views.get_stock_data, name='get_stock_data'),
     path('create_account/', views.create_account, name='create_account'),
-
+    path('update/user_tickers/', views.update_tickers, name='update_tickers'),
     path('accounts/login/', views.my_login_view, name='login'),
-    path('', auth_views.LogoutView.as_view(), name='account_logout'),
+    path('accounts/logout/', views.my_logout_view, name='logout'),
 ]
 

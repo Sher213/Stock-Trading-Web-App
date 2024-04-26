@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account</title>
+    <title>Logged Out.</title>
     <link rel="stylesheet" href="{% static 'myapp/styles.css' %}">
     <style>
         .dropdown {
@@ -50,11 +50,6 @@
     </header>
 </head>
 <body>
-    <h1>Create Account</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create</button>
-    </form>
+    <h1>You are now logged out.</h1>
 </body>
 </html>

@@ -1,13 +1,12 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
-from django.db.models import ManyToManyField
+from django.contrib.auth.models import User
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(max_length=254, help_text='Required. Inform a valid email address.')
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('username', 'email', 'password1', 'password2')
 
     def clean(self):
@@ -15,9 +14,9 @@ class SignUpForm(UserCreationForm):
         username = cleaned_data.get('username')
         email = cleaned_data.get('email')
 
-        if CustomUser.objects.filter(username=username).exists():
+        if User.objects.filter(username=username).exists():
             self.add_error('username', 'Username already exists.')
-        if CustomUser.objects.filter(email=email).exists():
+        if User.objects.filter(email=email).exists():
             self.add_error('email', 'Email already exists.')
 
         return cleaned_data

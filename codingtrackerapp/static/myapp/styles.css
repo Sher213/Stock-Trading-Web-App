@@ -8,11 +8,6 @@ header {
     padding: 10px 0;
 }
 
-li.accountDash {
-    position: absolute;
-    right: 20px;
-}
-
 nav ul {
     list-style-type: none;
     width: 100%;
