@@ -18,13 +18,17 @@ def home(request):
 @login_required
 def get_stock_data(request):
     try:
-        ticker_symbol = request.GET.get('ticker')
-        print(request.user.username)
-        tSeries = yf.Ticker(ticker_symbol)
-        hist = tSeries.history(period="1y")
+        ticker_symbols = request.GET.getlist('ticker')
 
-        dates = hist.index.tolist()
-        close_prices = hist['Close'].tolist()
+        hist = []
+        for t in ticker_symbols:
+            hist.append(yf.Ticker(t).history(period="1y"))
+
+        #keep dates only from the 
+        dates = hist[0].index.tolist()
+        close_prices = []
+        for h in hist:
+            close_prices.append(h['Close'].tolist())
         data = {'dates': dates, 'close_prices': close_prices}
 
         return JsonResponse(data)

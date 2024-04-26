@@ -150,7 +150,6 @@
             }
         });
         
-
         var innerCancelButtons = document.querySelectorAll(".innerButton");
         var innerPs = document.querySelectorAll(".innerP");
         var innerLis = document.querySelectorAll(".innerLi");
@@ -179,6 +178,7 @@
             newP.style.paddingRight = "15px";
 
             newP.textContent = val;
+            newP.className = "innerP";
             newLi.appendChild(newP);
             newLi.appendChild(cancelButton);
 
@@ -198,16 +198,34 @@
         Chart.defaults.plugins.tooltip.format = 'YYYY-MM-DD HH:mm:ss';
 
         sendDataButton.addEventListener("click", function() {
-            var val = currTicker.value;
-            const queryString = "ticker="+val;
+            var vals = []
+            var innerPs = document.querySelectorAll(".innerP");
+
+            innerPs.forEach(function(innerPara) {
+                vals.push(innerPara.textContent)
+                console.log(innerPara.textContent)
+            });
+            const queryString = vals.map(vals => "ticker=" + vals).join('&');
 
             fetch('/get_stock_data/?' + queryString)
             .then(response => response.json())
             .then(data => {
                 const dates = data.dates;
                 const closePrices = data.close_prices;
-
                 const ctx = document.getElementById('stockChart').getContext('2d');
+                const chartData = [] 
+
+                for (let i = 0; i < closePrices.length; i++) {
+                    const randRGB1 = Math.floor(Math.random() * (256))
+                    const randRGB2 = Math.floor(Math.random() * (256))
+
+                    chartData.push({
+                        label: innerPs[i].textContent,
+                        data: closePrices[i],
+                        borderColor: `rgb(${randRGB1}, ${randRGB2}, 192)`,
+                        tension: 0.1
+                    });
+                }
 
                 if (Chart.getChart("stockChart")) {
                     Chart.getChart("stockChart")?.destroy();
@@ -217,12 +235,7 @@
                     type: 'line',
                     data: {
                         labels: dates,
-                        datasets: [{
-                            label: val + ' Close Price',
-                            data: closePrices,
-                            borderColor: 'rgb(75, 192, 192)',
-                            tension: 0.1
-                        }]
+                        datasets: chartData
                     },
                     options: {
                     }
