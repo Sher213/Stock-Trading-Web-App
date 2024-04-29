@@ -20,19 +20,18 @@ def get_stock_data(request):
     try:
         ticker_symbols = request.GET.getlist('ticker')
 
-        hist = []
+        timeSeries = []
         for t in ticker_symbols:
-            hist.append(yf.Ticker(t).history(period="1y"))
-        #keep dates only from the 
-        print(hist[0].keys())
-        dates = hist[0].index.tolist()
+            timeSeries.append(yf.Ticker(t).history(period="1y"))
+
+        dates = timeSeries[0].index.tolist()
         close_prices = []
         volumes = []
-        for h in hist:
+        for h in timeSeries:
             close_prices.append(h['Close'].tolist())
             volumes.append(h['Volume'].tolist())
         data = {'dates': dates, 'close_prices': close_prices, 'volumes_data' : volumes}
-
+        print(timeSeries)
         return JsonResponse(data)
     except Exception as e:
         return JsonResponse({'error': str(e)})
@@ -78,7 +77,6 @@ def update_tickers(request):
         #if ticker needs to be removed from the list
         if ticker_instance:
             ticker, created = Ticker.objects.get_or_create(symbol=ticker_instance)
-            print(ticker)
             user_tickers.tickers.remove(ticker)
             return JsonResponse({'message': 'Ticker removed successfully'})
         else:
@@ -103,7 +101,6 @@ def my_login_view(request):
             username = request.POST.get('username')
             password = request.POST.get('password')
             user = authenticate(request, username=username, password=password)
-            print(type(user))
             if user is not None:
                 login(request, user)
                 return redirect('index')

@@ -4,10 +4,20 @@ var dropdownButton = document.querySelector('.collapsible');
 var dropdownContent = document.querySelector('.content');
 var currTicker = document.querySelector(".currTicker");
 var parentList = document.getElementById('parentListTickers');
+const bubbles = document.querySelectorAll('.bubble');
+const leftBubbleBtn = document.getElementById('left-btn');
+const rightBubbleBtn = document.getElementById('right-btn');
+var sliderCont = document.querySelector(".slider-container");
+var slider = document.getElementById("myRange");
+var sliderPercent = document.getElementById("slider-value");
+
+var tickerSymbols = [];
 
 var dates = []
 var histPricesData = []
 var volumesData = []
+
+var currentBubble = 0;
 
 function getCookie(name) {
     let cookieValue = null;
@@ -26,50 +36,122 @@ function getCookie(name) {
 const csrftoken = getCookie('csrftoken');
 
 //Make the Graphs
-function generateGraphs() {
+function generateGraphs(event) {
     const ctx = document.getElementById('histPrices').getContext('2d');
     const ctx2 = document.getElementById('volumeChart').getContext('2d');
-
-    if (Chart.getChart("histPrices")) {
-        Chart.getChart("histPrices")?.destroy();
-    }
-    console.log(dates);
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: histPricesData
-        },
-        options: {
+    if (!(event.target === leftBubbleBtn || event.target === rightBubbleBtn || event.target === slider)){
+        if (Chart.getChart("histPrices")) {
+            Chart.getChart("histPrices")?.destroy();
         }
-    });
 
-    if (Chart.getChart("volumeChart")) {
-        Chart.getChart("volumeChart")?.destroy();
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: histPricesData
+            },
+            options: {
+            }
+        });
     }
 
-    new Chart(ctx2, {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: volumesData
-        },
-        options: {
+    //Get the right amounts based on the slide value
+    var slideDates = dates.slice(Math.round(dates.length * (slider.value / 100)), dates.length);
+    var slidesVolumesData = JSON.parse(JSON.stringify(volumesData));
+    if (event.target === slider) {
+        for (let i = 0; i < volumesData.length; i++) {
+            slidesVolumesData[i]['data'] = volumesData[i]['data'].slice(Math.round(volumesData[i]['data'].length * (slider.value / 100)), volumesData[i]['data'].length);
         }
-    });
+    }
+
+    if (currentBubble == 0) {
+        sliderCont.style.opacity = 1;
+        if (Chart.getChart("volumeChart")) {
+            Chart.getChart("volumeChart")?.destroy();
+        }
+
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: slideDates,
+                datasets: slidesVolumesData
+            }
+        });
+    }
+    else if (currentBubble == 1) {
+        sliderCont.style.opacity = 0;
+        if (Chart.getChart("volumeChart")) {
+            Chart.getChart("volumeChart")?.destroy();
+        }
+        
+        const lastVolumes = []
+        const backgroundColor = []
+        for (let i = 0; i < volumesData.length; i++) {
+            const randRGB1 = Math.floor(Math.random() * (256))
+            const randRGB2 = Math.floor(Math.random() * (256))
+
+            lastVolumes.push(volumesData[i]['data'][volumesData[i]['data'].length-1]);
+            backgroundColor.push(`rgb(${randRGB1}, ${randRGB2}, 192)`)
+        }
+
+        new Chart(ctx2, {
+            type: 'pie',
+            data: {
+                labels: tickerSymbols,
+                datasets: [{
+                label: "Volumes ($)",
+                data: lastVolumes,
+                hoverOffset: 4
+                }]
+            }
+        });
+    }
+    else if (currentBubble == 2) {
+        sliderCont.style.opacity = 0;
+        if (Chart.getChart("volumeChart")) {
+            Chart.getChart("volumeChart")?.destroy();
+        }
+        
+        const lastVolumes = []
+        const backgroundColor = []
+        for (let i = 0; i < volumesData.length; i++) {
+            const randRGB1 = Math.floor(Math.random() * (256))
+            const randRGB2 = Math.floor(Math.random() * (256))
+
+            lastVolumes.push(volumesData[i]['data'][volumesData[i]['data'].length-1]);
+            backgroundColor.push(`rgb(${randRGB1}, ${randRGB2}, 192)`)
+        }
+
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: tickerSymbols,
+                datasets: [{
+                label: "Volumes ($)",
+                data: lastVolumes,
+                hoverOffset: 4
+                }]
+            }
+        });
+    }
+    else {
+        sliderCont.style.opacity = 0;
+        if (Chart.getChart("volumeChart")) {
+            Chart.getChart("volumeChart")?.destroy();
+        }
+    }
 }
 
 //Get API Data
-function getDataFromAPI() {
-    var vals = [];
+function getDataFromAPI(event) {
     var innerPs = document.querySelectorAll(".innerP");
 
     innerPs.forEach(function(innerPara) {
-        vals.push(innerPara.textContent)
+        tickerSymbols.push(innerPara.textContent)
     });
 
-    vals = [...new Set(vals)];
-    const queryString = vals.map(vals => "ticker=" + vals).join('&');
+    tickerSymbols = [...new Set(tickerSymbols)];
+    const queryString = tickerSymbols.map(vals => "ticker=" + vals).join('&');
 
     fetch('/get_stock_data/?' + queryString)
     .then(response => response.json())
@@ -77,9 +159,8 @@ function getDataFromAPI() {
         const closePrices = data.close_prices;
         const volumes = data.volumes_data;
         dates = data.dates;
-        histPricesData = []
-        volumesData = []
-                
+        histPricesData = [];
+        volumesData = [];
         for (let i = 0; i < closePrices.length; i++) {
             const randRGB1 = Math.floor(Math.random() * (256))
             const randRGB2 = Math.floor(Math.random() * (256))
@@ -104,7 +185,7 @@ function getDataFromAPI() {
             });
         }
 
-        generateGraphs();
+        generateGraphs(event);
     })
     .catch(error => console.error('Error fetching data:', error));
 }
@@ -124,7 +205,7 @@ function cancelListItem(event) {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromAPI();
+    getDataFromAPI(event);
 }
 
 function cancelListItem2(event) {
@@ -143,7 +224,7 @@ function cancelListItem2(event) {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromAPI();
+    getDataFromAPI(event);
     }
 
 dropdownButton.addEventListener("click", function() {
@@ -169,7 +250,7 @@ innerLis.forEach(function(li) {
     li.style.paddingRight = "15px";
 });
 
-addTickerButton.addEventListener("click", function() {
+addTickerButton.addEventListener("click", function(event) {
     var val = currTicker.value;
 
     //get all current values added to the list of tickers and only add to list if not already in it
@@ -210,19 +291,13 @@ addTickerButton.addEventListener("click", function() {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromAPI();
+    getDataFromAPI(event);
 })
 
 Chart.defaults.plugins.tooltip.format = 'YYYY-MM-DD';
 sendDataButton.addEventListener("click", getDataFromAPI);
 
 //Bubble Menu
-const bubbles = document.querySelectorAll('.bubble');
-const leftBtn = document.getElementById('left-btn');
-const rightBtn = document.getElementById('right-btn');
-
-let currentBubble = 0;
-
 function updateActiveBubble() {
   bubbles.forEach((bubble, index) => {
     if (index === currentBubble) {
@@ -235,21 +310,24 @@ function updateActiveBubble() {
 
 updateActiveBubble();
 
-leftBtn.addEventListener('click', () => {
+leftBubbleBtn.addEventListener('click', (event) => {
   currentBubble = (currentBubble - 1 + bubbles.length) % bubbles.length;
   updateActiveBubble();
+  generateGraphs(event);
 });
 
-rightBtn.addEventListener('click', () => {
+rightBubbleBtn.addEventListener('click', (event) => {
   currentBubble = (currentBubble + 1) % bubbles.length;
   updateActiveBubble();
+  generateGraphs(event);
 });
 
 //Slider
-var slider = document.getElementById("myRange");
-var output = document.getElementById("slider-value");
-function updatePercentage() {
-    output.innerHTML = slider.value + "%";
+function updatePercentage(event) {
+    sliderPercent.innerHTML = (100 - slider.value) + "%";
+    if (event){
+        generateGraphs(event);
+    }
 }
 
 updatePercentage();
