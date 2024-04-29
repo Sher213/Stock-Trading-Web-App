@@ -81,7 +81,7 @@
             </li>
         {% endfor %}
     </ul>
-    <canvas id="stockChart"></canvas>
+    <canvas id="lineChart"></canvas>
     <button id="getStockData">DO</button>
     <button id="addTicker">ADD</button>
     <script>
@@ -108,6 +108,55 @@
         }
         const csrftoken = getCookie('csrftoken');
 
+        function makeLineChart() {
+            var vals = []
+            var innerPs = document.querySelectorAll(".innerP");
+
+            innerPs.forEach(function(innerPara) {
+                vals.push(innerPara.textContent)
+                console.log(innerPara.textContent)
+            });
+
+            vals = [...new Set(vals)];
+            const queryString = vals.map(vals => "ticker=" + vals).join('&');
+
+            fetch('/get_stock_data/?' + queryString)
+            .then(response => response.json())
+            .then(data => {
+                const dates = data.dates;
+                const closePrices = data.close_prices;
+                const ctx = document.getElementById('lineChart').getContext('2d');
+                const chartData = [] 
+
+                for (let i = 0; i < closePrices.length; i++) {
+                    const randRGB1 = Math.floor(Math.random() * (256))
+                    const randRGB2 = Math.floor(Math.random() * (256))
+
+                    chartData.push({
+                        label: innerPs[i].textContent,
+                        data: closePrices[i],
+                        borderColor: `rgb(${randRGB1}, ${randRGB2}, 192)`,
+                        tension: 0.1
+                    });
+                }
+
+                if (Chart.getChart("lineChart")) {
+                    Chart.getChart("lineChart")?.destroy();
+                }
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: chartData
+                    },
+                    options: {
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+        }
+
         function cancelListItem(event) {
             const listItem = event.target.parentNode;
             parentList.removeChild(listItem);
@@ -122,6 +171,8 @@
             })
             .then(response => response.json())
             .catch(error => console.error('Error fetching data:', error));
+
+            makeLineChart();
         }
 
         function cancelListItem2(event) {
@@ -139,6 +190,8 @@
             })
             .then(response => response.json())
             .catch(error => console.error('Error fetching data:', error));
+
+            makeLineChart();
         }
 
         dropdownButton.addEventListener("click", function() {
@@ -166,8 +219,23 @@
 
         addTickerButton.addEventListener("click", function() {
             var val = currTicker.value;
+
+            //get all current values added to the list of tickers and only add to list if not already in it
+            var tickersList = []
+            var innerPs = document.querySelectorAll(".innerP");
+            innerPs.forEach(function(innerPara) {
+                tickersList.push(innerPara.textContent)
+                console.log(innerPara.textContent)
+            });
+            if (tickersList.includes(val)) {
+                return;
+            }
+            else {
+            }
+
             const newLi = document.createElement('li');
             const newP = document.createElement('p');
+
 
             const cancelButton = document.createElement('button');
             cancelButton.textContent = 'Cancel';
@@ -193,56 +261,14 @@
             })
             .then(response => response.json())
             .catch(error => console.error('Error fetching data:', error));
+
+            makeLineChart();
         })
 
         Chart.defaults.plugins.tooltip.format = 'YYYY-MM-DD HH:mm:ss';
 
-        sendDataButton.addEventListener("click", function() {
-            var vals = []
-            var innerPs = document.querySelectorAll(".innerP");
+        sendDataButton.addEventListener("click", makeLineChart);
 
-            innerPs.forEach(function(innerPara) {
-                vals.push(innerPara.textContent)
-                console.log(innerPara.textContent)
-            });
-            const queryString = vals.map(vals => "ticker=" + vals).join('&');
-
-            fetch('/get_stock_data/?' + queryString)
-            .then(response => response.json())
-            .then(data => {
-                const dates = data.dates;
-                const closePrices = data.close_prices;
-                const ctx = document.getElementById('stockChart').getContext('2d');
-                const chartData = [] 
-
-                for (let i = 0; i < closePrices.length; i++) {
-                    const randRGB1 = Math.floor(Math.random() * (256))
-                    const randRGB2 = Math.floor(Math.random() * (256))
-
-                    chartData.push({
-                        label: innerPs[i].textContent,
-                        data: closePrices[i],
-                        borderColor: `rgb(${randRGB1}, ${randRGB2}, 192)`,
-                        tension: 0.1
-                    });
-                }
-
-                if (Chart.getChart("stockChart")) {
-                    Chart.getChart("stockChart")?.destroy();
-                }
-
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: dates,
-                        datasets: chartData
-                    },
-                    options: {
-                    }
-                });
-            })
-            .catch(error => console.error('Error fetching data:', error));
-        });
     </script>
 </body>
 </html>
