@@ -24,6 +24,7 @@ urlpatterns = [
     path('', views.home, name='index'),
     path('dashboard/', views.get_dashboard, name='get_dashboard'),
     path('get_stock_data/', views.get_stock_data, name='get_stock_data'),
+    path('get_stock_news/', views.get_stock_news, name='get_stock_news'),
     path('create_account/', views.create_account, name='create_account'),
     path('update/user_tickers/', views.update_tickers, name='update_tickers'),
     path('accounts/login/', views.my_login_view, name='login'),

@@ -4,6 +4,8 @@ var dropdownButton = document.querySelector('.collapsible');
 var dropdownContent = document.querySelector('.content');
 var currTicker = document.querySelector(".currTicker");
 var parentList = document.getElementById('parentListTickers');
+var infoCont = document.querySelector(".info-container");
+var infoUl = document.querySelector(".stocks-info-list");
 const bubbles = document.querySelectorAll('.bubble');
 const leftBubbleBtn = document.getElementById('left-btn');
 const rightBubbleBtn = document.getElementById('right-btn');
@@ -66,6 +68,7 @@ function generateGraphs(event) {
 
     if (currentBubble == 0) {
         sliderCont.style.opacity = 1;
+        infoCont.style.opacity = 0;
         if (Chart.getChart("volumeChart")) {
             Chart.getChart("volumeChart")?.destroy();
         }
@@ -80,6 +83,7 @@ function generateGraphs(event) {
     }
     else if (currentBubble == 1) {
         sliderCont.style.opacity = 0;
+        infoCont.style.opacity = 0;
         if (Chart.getChart("volumeChart")) {
             Chart.getChart("volumeChart")?.destroy();
         }
@@ -108,6 +112,7 @@ function generateGraphs(event) {
     }
     else if (currentBubble == 2) {
         sliderCont.style.opacity = 0;
+        infoCont.style.opacity = 0;
         if (Chart.getChart("volumeChart")) {
             Chart.getChart("volumeChart")?.destroy();
         }
@@ -134,16 +139,190 @@ function generateGraphs(event) {
             }
         });
     }
-    else {
+    else if (currentBubble == 3) {
         sliderCont.style.opacity = 0;
+        infoCont.style.opacity = 1;
         if (Chart.getChart("volumeChart")) {
             Chart.getChart("volumeChart")?.destroy();
         }
     }
 }
 
-//Get API Data
-function getDataFromAPI(event) {
+// Function to create the info section
+function createAboutSection(data) {
+    const container = document.createElement('div');
+
+    const aboutsHeading = document.createElement('h3');
+    aboutsHeading.textContent = 'About';
+    container.appendChild(aboutsHeading);
+
+    // Create and append the snippet paragraph
+    const snippetPara = document.createElement('p');
+    snippetPara.textContent = data.snippet;
+    container.appendChild(snippetPara);
+
+    // Create and append the link to Wikipedia
+    const linkPara = document.createElement('p');
+    const link = document.createElement('a');
+    link.href = data.link;
+    link.textContent = data.link_text;
+    link.target = '_blank';
+    linkPara.appendChild(link);
+    container.appendChild(linkPara);
+
+    // Create and append the info items
+    console.log(data[0].info);
+    data[0].info.forEach(item => {
+        const infoPara = document.createElement('p');
+        if (item.link) {
+            const infoLink = document.createElement('a');
+            infoLink.href = item.link;
+            infoLink.textContent = `${item.label}: ${item.value}`;
+            infoLink.target = '_blank';
+            infoPara.appendChild(infoLink);
+        } else {
+            infoPara.textContent = `${item.label}: ${item.value}`;
+        }
+        container.appendChild(infoPara);
+    });
+
+    return container;
+}
+
+// Function to create the stats section
+function createStatsSection(data) {
+    // Get the container element
+    const container = document.createElement('div');
+
+    const statsHeading = document.createElement('h3');
+    statsHeading.textContent = 'Stats';
+    container.appendChild(statsHeading);
+
+    // Iterate over the data array and create elements for each item
+    data.forEach(item => {
+        // Create the container for each info item
+        const infoItem = document.createElement('div');
+        infoItem.classList.add('info-item');
+
+        // Create and append the label
+        const labelHeading = document.createElement('h3');
+        labelHeading.textContent = item.label || 'No label available';
+        infoItem.appendChild(labelHeading);
+
+        // Create and append the description
+        const descriptionPara = document.createElement('p');
+        descriptionPara.textContent = item.description || 'No description available';
+        infoItem.appendChild(descriptionPara);
+
+        // Create and append the value
+        const valuePara = document.createElement('p');
+        valuePara.textContent = item.value || 'No value available';
+        infoItem.appendChild(valuePara);
+
+        // Append the info item to the container
+        container.appendChild(infoItem);
+    });
+
+    return container;
+}
+
+// Function to create the news section
+function createNewsSection(data) {
+    // Get the container element
+    const container = document.createElement('div');
+    
+    const newsHeading = document.createElement('h3');
+    newsHeading.textContent = 'News';
+    container.appendChild(newsHeading);
+
+    // Iterate over the data array and create elements for each item
+    data.forEach(item => {
+        // Create the container for each news item
+        const infoItem = document.createElement('div');
+        infoItem.classList.add('info-item');
+
+        // Create and append the thumbnail
+        const thumbnail = document.createElement('img');
+        thumbnail.src = item.thumbnail || '';
+        thumbnail.alt = item.source || 'Thumbnail';
+        infoItem.appendChild(thumbnail);
+
+        // Create and append the content container
+        const content = document.createElement('div');
+
+        // Create and append the snippet
+        const snippetPara = document.createElement('p');
+        snippetPara.textContent = item.snippet || 'No snippet available.';
+        content.appendChild(snippetPara);
+
+        // Create and append the link
+        const linkPara = document.createElement('p');
+        const link = document.createElement('a');
+        link.href = item.link || '#';
+        link.textContent = item.source || 'Source';
+        link.target = '_blank';
+        linkPara.appendChild(link);
+        content.appendChild(linkPara);
+
+        // Create and append the date
+        const datePara = document.createElement('p');
+        datePara.textContent = item.date || 'No date available.';
+        content.appendChild(datePara);
+
+        // Append the content to the info item
+        infoItem.appendChild(content);
+
+        // Append the info item to the container
+        container.appendChild(infoItem);
+    });
+
+    return container;
+}
+
+//Get Google Finance API Data
+function getDataFromGFinanceAPI(event) {
+    const queryString = tickerSymbols.map(vals => "ticker=" + vals).join('&');
+
+    fetch('/get_stock_news/?' + queryString)
+    .then(response => response.json())
+    .then(data => {
+        const newsResults = data.news_results;
+        const stats = data.stats;
+        const abouts = data.abouts;
+        console.log(stats);
+        for (let i = 0; i < stats.length; i++) {
+            // Create new list item
+            const newListItem = document.createElement('li');
+            newListItem.className = 'stocks-info-item';
+
+            const ticketTitle = document.createElement('h1');
+            ticketTitle.textContent = tickerSymbols[i];
+
+            // Create news container
+            newsContainer = createNewsSection(newsResults[i]);
+
+            // Create stats container
+            statsContainer = createStatsSection(stats[i])
+
+            // Create about container
+            console.log(abouts[i][0].info);
+            aboutsContainer = createAboutSection(abouts[i]);
+
+            // Append containers to list item
+            newListItem.appendChild(ticketTitle)
+            newListItem.appendChild(newsContainer);
+            newListItem.appendChild(statsContainer);
+            newListItem.appendChild(aboutsContainer);
+
+            // Append new list item to the list
+            infoUl.appendChild(newListItem);
+            console.log("CLEAR");
+        }
+    })
+}
+
+//Get yFinance API Data
+function getDataFromYFinanceAPI(event) {
     var innerPs = document.querySelectorAll(".innerP");
 
     innerPs.forEach(function(innerPara) {
@@ -186,6 +365,7 @@ function getDataFromAPI(event) {
         }
 
         generateGraphs(event);
+        getDataFromGFinanceAPI(event);
     })
     .catch(error => console.error('Error fetching data:', error));
 }
@@ -205,7 +385,7 @@ function cancelListItem(event) {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromAPI(event);
+    getDataFromYFinanceAPI(event);
 }
 
 function cancelListItem2(event) {
@@ -224,7 +404,7 @@ function cancelListItem2(event) {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromAPI(event);
+    getDataFromYFinanceAPI(event);
     }
 
 dropdownButton.addEventListener("click", function() {
@@ -291,11 +471,11 @@ addTickerButton.addEventListener("click", function(event) {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromAPI(event);
+    getDataFromYFinanceAPI(event);
 })
 
 Chart.defaults.plugins.tooltip.format = 'YYYY-MM-DD';
-sendDataButton.addEventListener("click", getDataFromAPI);
+sendDataButton.addEventListener("click", getDataFromYFinanceAPI);
 
 //Bubble Menu
 function updateActiveBubble() {

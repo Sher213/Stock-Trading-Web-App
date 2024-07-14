@@ -6,13 +6,46 @@ from django.contrib.auth.decorators import login_required
 from .forms import SignUpForm
 from .models import UsersTickers, Ticker
 import yfinance as yf
+from serpapi import GoogleSearch
 import csv
 import re
+import configparser
+
+config = configparser.ConfigParser()
+config.read('D:\coding-work\stock-tracker-web-app\codingtrackerapp\myapp\config.ini')
 
 #INDEX VIEW
 def home(request):
     users = User.objects.all()
     return render(request, 'index.html', {'currentUsers' : users, 'loggedIn' : request.user.is_authenticated})
+
+#GOOGLE API
+@login_required
+def get_stock_news(request):
+    try:
+        ticker_symbols = request.GET.getlist('ticker')
+        news_results = []
+        stats = []
+        abouts = []
+
+        for t in ticker_symbols:
+            #Google API
+            params = {
+                "engine": "google_finance",
+                "q": t + ":NYSE",
+                "api_key": config['DEFAULT']['GOOGLE_FINANCE_API_KEY']
+            }
+
+            search = GoogleSearch(params)
+            results = search.get_dict()
+            news_results.append(results['news_results'])
+            stats.append(results['knowledge_graph']['key_stats']['stats'])
+            abouts.append(results['knowledge_graph']['about'])
+        data = {'news_results': news_results, 'stats': stats, 'abouts' : abouts}
+        return JsonResponse(data)
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)})
 
 #REQUEST STOCK DATA
 @login_required
@@ -20,6 +53,7 @@ def get_stock_data(request):
     try:
         ticker_symbols = request.GET.getlist('ticker')
 
+        #yFinance API
         timeSeries = []
         for t in ticker_symbols:
             timeSeries.append(yf.Ticker(t).history(period="1y"))
@@ -31,9 +65,10 @@ def get_stock_data(request):
             close_prices.append(h['Close'].tolist())
             volumes.append(h['Volume'].tolist())
         data = {'dates': dates, 'close_prices': close_prices, 'volumes_data' : volumes}
-        print(timeSeries)
+
         return JsonResponse(data)
     except Exception as e:
+        print(e)
         return JsonResponse({'error': str(e)})
 
 #GET DASHBOARD WITH TICKERS

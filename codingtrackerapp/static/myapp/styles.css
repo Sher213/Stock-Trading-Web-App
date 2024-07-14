@@ -65,6 +65,23 @@ main {
     justify-content: space-between;
 }
 
+.stocks-info-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5%;
+}
+
+.news-container {
+    background-color: aqua;
+    height: 90%;
+}
+
+.info-container {
+    position: absolute;
+    background-color: #4caf50;
+}
+
 .image {
     width: 30%;
     position: relative;
@@ -139,3 +156,7 @@ main {
     padding: 5px 10px;
     cursor: pointer;
   }
+
+.stocks-info-item {
+    align-items: center;
+}

@@ -83,6 +83,8 @@
     </ul>
     <button id="addTicker">ADD</button>
     <button id="getStockData">DO</button>
+    <canvas id="histPrices"></canvas>
+    <h1>Last Traded Volume</h1>
     <div class="bubble-container">
         <button id="left-btn">&lt;</button>
         <div class="bubbles">
@@ -93,13 +95,17 @@
         </div>
         <button id="right-btn">&gt;</button>
     </div>
-    <h1>Last Traded Volume</h1>
+    <div style="height: 75vh; width: 95vw; display: flex; justify-content: center;">
+        <canvas id="volumeChart"></canvas>
+        <div class="info-container" style="opacity: 0;">
+            <ul class="stocks-info-list">
+            </ul>
+        </div>
+    </div>
     <div class="slider-container">
         <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
         <p id="slider-value">100%</p>
     </div>
-    <canvas id="volumeChart"></canvas>
-    <canvas id="histPrices"></canvas>
     <script src="{% static 'myapp/dashboard.js' %}"></script>
 </body>
 </html>
