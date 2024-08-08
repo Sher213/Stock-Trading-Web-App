@@ -3,3 +3,4 @@ __init__.py
 db.sqlite3
 tickers.csv
 config.ini
+historical-data/
