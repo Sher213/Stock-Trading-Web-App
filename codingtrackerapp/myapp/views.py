@@ -38,9 +38,20 @@ def get_stock_news(request):
 
             search = GoogleSearch(params)
             results = search.get_dict()
-            news_results.append(results['news_results'])
-            stats.append(results['knowledge_graph']['key_stats']['stats'])
-            abouts.append(results['knowledge_graph']['about'])
+
+            if 'news_results' in results:
+                news_results.append(results['news_results'])
+            else:
+                news_results.append([{"title" : "No News Available."}])
+            if 'knowledge_graph' in results:
+                stats.append(results['knowledge_graph']['key_stats']['stats'])
+            else:
+                stats.append([{"title" : "No Stats Available."}])
+            if 'knowledge_graph' in results:
+                abouts.append(results['knowledge_graph']['about'])
+            else:
+                abouts.append([{"title" : "No About Available."}])
+
         data = {'news_results': news_results, 'stats': stats, 'abouts' : abouts}
         return JsonResponse(data)
     except Exception as e:

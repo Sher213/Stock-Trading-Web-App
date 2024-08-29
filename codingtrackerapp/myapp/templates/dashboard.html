@@ -8,34 +8,210 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{% static 'myapp/styles.css' %}">
     <style>
-        .dropdown {
-            position: absolute;
-            display: inline-block;
-            right: 160px;
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #F4F6F8;
+            color: #333;
         }
 
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-            z-index: 1;
+        .content {
+            margin-left: 20px;
+            margin-right: 20px;
         }
 
-        .dropdown:hover .dropdown-content {
-            display: block;
+        h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #2b4a9e;
         }
 
-        .dropdown-content a {
-            color: black;
-            padding: 12px 16px;
+        .selector-container {
+            margin-bottom: 20px;
+        }
+
+        .collapsible-title {
+            font-size: 16px;
+            color: #2b4a9e;
+            font-weight: bold;
+        }
+
+        /* Dropdown styling */
+        #tickerDropdown, #addTicker {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #2b4a9e;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            color: #2b4a9e;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #tickerDropdown:hover, #tickerDropdown:focus {
+            background-color: #e2e6ea;
+            border-color: #0056b3;
+        }
+
+        /* List styling */
+        #parentListTickers {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .innerLi {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 2px solid #2b4a9e;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .innerLi:hover {
+            background-color: #e2e6ea;
+            border-color: #0056b3;
+        }
+
+        .innerP {
+            margin: 0;
+            font-size: 16px;
+            color: #2b4a9e;
+            font-weight: bold;
+        }
+
+        /* Button styling */
+        .innerButton {
+            padding: 5px 10px;
+            font-size: 14px;
+            color: white;
+            background-color: #dc3545;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .innerButton:hover {
+            background-color: #c82333;
+        }
+        
+        /* General Styles for Sections */
+        section {
+            margin-bottom: 40px;
+        }
+
+        section h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #2b4a9e;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        section p {
+            margin: 10px 0;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        section a {
+            color: #2b4a9e;
             text-decoration: none;
-            display: block;
         }
 
-        .dropdown-content a:hover {
-            background-color: #f1f1f1;
+        section a:hover {
+            text-decoration: underline;
+        }
+
+        .stocks-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* About Section Styles */
+        .about-section {
+            background-color: #f9fafb;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        /* Stats Section Styles */
+        .stats-section {
+            background-color: #f9fafb;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stats-section .info-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stats-section .info-item h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .stats-section .info-item p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        /* News Section Styles */
+        .news-section {
+            background-color: #f9fafb;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .news-section .info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .news-section img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        .news-section .content {
+            flex: 1;
+        }
+
+        .news-section .content p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .news-section .content .date {
+            font-size: 14px;
+            color: #999;
         }
     </style>
 </head>
@@ -64,47 +240,48 @@
             </ul>
         </nav>
     </header>
-    <h1>Time Series Plot</h1>
-    <button class="collapsible">Select Tickers</button>
     <div class="content">
-        <select class="currTicker" id="tickerDropdown">
-            {% for ticker in tickers %}
-            <option>{{ ticker }}</option>
+        <h1>Time Series Plot</h1>
+        <div class="collapsible-title"><h3>Select Tickers</h3></div>
+        <div class="selector-container">
+            <select class="currTicker" id="tickerDropdown">
+                {% for ticker in tickers %}
+                <option>{{ ticker }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <ul id="parentListTickers">
+            {% for ticker in user_tickers %}
+                <li class="innerLi">
+                    <p class="innerP">{{ ticker }}</p>
+                    <button class="innerButton">Cancel</button>
+                </li>
             {% endfor %}
-        </select>
-    </div>
-    <ul id="parentListTickers">
-        {% for ticker in user_tickers %}
-            <li class="innerLi">
-                <p class="innerP">{{ ticker }}</p>
-                <button class="innerButton">Cancel</button>
-            </li>
-        {% endfor %}
-    </ul>
-    <button id="addTicker">ADD</button>
-    <button id="getStockData">DO</button>
-    <canvas id="histPrices"></canvas>
-    <h1>Last Traded Volume</h1>
-    <div class="bubble-container">
-        <button id="left-btn">&lt;</button>
-        <div class="bubbles">
-          <div class="bubble"></div>
-          <div class="bubble"></div>
-          <div class="bubble"></div>
-          <div class="bubble"></div>
+        </ul>
+        <button id="addTicker">ADD</button>
+        <canvas id="histPrices"></canvas>
+        <h1>Last Traded Volume</h1>
+        <div class="bubble-container">
+            <button id="left-btn">&lt;</button>
+            <div class="bubbles">
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            </div>
+            <button id="right-btn">&gt;</button>
         </div>
-        <button id="right-btn">&gt;</button>
-    </div>
-    <div style="height: 75vh; width: 95vw; display: flex; justify-content: center;">
-        <canvas id="volumeChart"></canvas>
-        <div class="info-container" style="opacity: 0;">
-            <ul class="stocks-info-list">
-            </ul>
+        <div class="slider-container">
+            <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+            <p id="slider-value">100%</p>
         </div>
-    </div>
-    <div class="slider-container">
-        <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
-        <p id="slider-value">100%</p>
+        <div style="height: 75vh; width: 95vw; display: flex; justify-content: center;">
+            <canvas id="volumeChart"></canvas>
+            <div class="info-container" style="opacity: 0;">
+                <ul class="stocks-info-list">
+                </ul>
+            </div>
+        </div>
     </div>
     <script src="{% static 'myapp/dashboard.js' %}"></script>
 </body>

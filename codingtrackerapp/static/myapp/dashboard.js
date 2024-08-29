@@ -21,6 +21,9 @@ var volumesData = []
 
 var currentBubble = 0;
 
+const yFinanceKey = 'yFinanceData';
+const gFinanceKey = 'gFinanceData';
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -148,9 +151,10 @@ function generateGraphs(event) {
     }
 }
 
-// Function to create the info section
 function createAboutSection(data) {
     const container = document.createElement('div');
+    container.classList.add('about-section'); // Add the about-section class
+    container.id = 'about-section'; // Add the about-section ID
 
     const aboutsHeading = document.createElement('h3');
     aboutsHeading.textContent = 'About';
@@ -160,6 +164,11 @@ function createAboutSection(data) {
     const snippetPara = document.createElement('p');
     snippetPara.textContent = data.snippet;
     container.appendChild(snippetPara);
+
+    if (data[0].title == "No About Available.") {
+        snippetPara.textContent = "No About Available.";
+        return container;
+    }
 
     // Create and append the link to Wikipedia
     const linkPara = document.createElement('p');
@@ -171,7 +180,6 @@ function createAboutSection(data) {
     container.appendChild(linkPara);
 
     // Create and append the info items
-    console.log(data[0].info);
     data[0].info.forEach(item => {
         const infoPara = document.createElement('p');
         if (item.link) {
@@ -191,18 +199,26 @@ function createAboutSection(data) {
 
 // Function to create the stats section
 function createStatsSection(data) {
-    // Get the container element
     const container = document.createElement('div');
+    container.classList.add('stats-section'); // Add the stats-section class
+    container.id = 'stats-section'; // Add the stats-section ID
 
     const statsHeading = document.createElement('h3');
     statsHeading.textContent = 'Stats';
     container.appendChild(statsHeading);
 
+    if (data[0].title == "No Stats Available.") {
+        const descriptionPara = document.createElement('p');
+        descriptionPara.textContent = 'No Stats Available';
+        container.appendChild(descriptionPara);
+        return container;
+    }
+
     // Iterate over the data array and create elements for each item
     data.forEach(item => {
         // Create the container for each info item
         const infoItem = document.createElement('div');
-        infoItem.classList.add('info-item');
+        infoItem.classList.add('info-item'); // Add the info-item class
 
         // Create and append the label
         const labelHeading = document.createElement('h3');
@@ -228,18 +244,26 @@ function createStatsSection(data) {
 
 // Function to create the news section
 function createNewsSection(data) {
-    // Get the container element
     const container = document.createElement('div');
-    
+    container.classList.add('news-section'); // Add the news-section class
+    container.id = 'news-section'; // Add the news-section ID
+
     const newsHeading = document.createElement('h3');
     newsHeading.textContent = 'News';
     container.appendChild(newsHeading);
+
+    if (data[0].title == "No News Available.") {
+        const descriptionPara = document.createElement('p');
+        descriptionPara.textContent = 'No News Available';
+        container.appendChild(descriptionPara);
+        return container;
+    }
 
     // Iterate over the data array and create elements for each item
     data.forEach(item => {
         // Create the container for each news item
         const infoItem = document.createElement('div');
-        infoItem.classList.add('info-item');
+        infoItem.classList.add('info-item'); // Add the info-item class
 
         // Create and append the thumbnail
         const thumbnail = document.createElement('img');
@@ -249,6 +273,7 @@ function createNewsSection(data) {
 
         // Create and append the content container
         const content = document.createElement('div');
+        content.classList.add('content'); // Add the content class
 
         // Create and append the snippet
         const snippetPara = document.createElement('p');
@@ -267,6 +292,7 @@ function createNewsSection(data) {
         // Create and append the date
         const datePara = document.createElement('p');
         datePara.textContent = item.date || 'No date available.';
+        datePara.classList.add('date'); // Add the date class
         content.appendChild(datePara);
 
         // Append the content to the info item
@@ -279,70 +305,33 @@ function createNewsSection(data) {
     return container;
 }
 
-//Get Google Finance API Data
-function getDataFromGFinanceAPI(event) {
-    const queryString = tickerSymbols.map(vals => "ticker=" + vals).join('&');
-
-    fetch('/get_stock_news/?' + queryString)
-    .then(response => response.json())
-    .then(data => {
-        const newsResults = data.news_results;
-        const stats = data.stats;
-        const abouts = data.abouts;
-        console.log(stats);
-        for (let i = 0; i < stats.length; i++) {
-            // Create new list item
-            const newListItem = document.createElement('li');
-            newListItem.className = 'stocks-info-item';
-
-            const ticketTitle = document.createElement('h1');
-            ticketTitle.textContent = tickerSymbols[i];
-
-            // Create news container
-            newsContainer = createNewsSection(newsResults[i]);
-
-            // Create stats container
-            statsContainer = createStatsSection(stats[i])
-
-            // Create about container
-            console.log(abouts[i][0].info);
-            aboutsContainer = createAboutSection(abouts[i]);
-
-            // Append containers to list item
-            newListItem.appendChild(ticketTitle)
-            newListItem.appendChild(newsContainer);
-            newListItem.appendChild(statsContainer);
-            newListItem.appendChild(aboutsContainer);
-
-            // Append new list item to the list
-            infoUl.appendChild(newListItem);
-            console.log("CLEAR");
-        }
-    })
+// Save data to localStorage
+function saveDataToLocalStorage(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
 }
 
-//Get yFinance API Data
-function getDataFromYFinanceAPI(event) {
+// Load data from localStorage
+function loadDataFromLocalStorage(key) {
+    const savedData = localStorage.getItem(key);
+    return savedData ? JSON.parse(savedData) : null;
+}
+
+// Process and display the data from both APIs, and generate graphs
+function processData(data, key, event) {
     var innerPs = document.querySelectorAll(".innerP");
-
-    innerPs.forEach(function(innerPara) {
-        tickerSymbols.push(innerPara.textContent)
-    });
-
-    tickerSymbols = [...new Set(tickerSymbols)];
-    const queryString = tickerSymbols.map(vals => "ticker=" + vals).join('&');
-
-    fetch('/get_stock_data/?' + queryString)
-    .then(response => response.json())
-    .then(data => {
+    console.log(data)
+    if (key === 'yFinanceData') {
         const closePrices = data.close_prices;
         const volumes = data.volumes_data;
         dates = data.dates;
+
+        // Process historical prices and volumes (YFinance)
         histPricesData = [];
         volumesData = [];
-        for (let i = 0; i < closePrices.length; i++) {
-            const randRGB1 = Math.floor(Math.random() * (256))
-            const randRGB2 = Math.floor(Math.random() * (256))
+
+        for (let i = 0; i < innerPs.length; i++) {
+            const randRGB1 = Math.floor(Math.random() * 256);
+            const randRGB2 = Math.floor(Math.random() * 256);
 
             histPricesData.push({
                 label: innerPs[i].textContent,
@@ -352,9 +341,9 @@ function getDataFromYFinanceAPI(event) {
             });
         }
 
-        for (let i = 0; i < volumes.length; i++) {
-            const randRGB1 = Math.floor(Math.random() * (256))
-            const randRGB2 = Math.floor(Math.random() * (256))
+        for (let i = 0; i < innerPs.length; i++) {
+            const randRGB1 = Math.floor(Math.random() * 256);
+            const randRGB2 = Math.floor(Math.random() * 256);
 
             volumesData.push({
                 label: innerPs[i].textContent,
@@ -364,11 +353,130 @@ function getDataFromYFinanceAPI(event) {
             });
         }
 
+        // Generate graphs after processing data
         generateGraphs(event);
-        getDataFromGFinanceAPI(event);
-    })
-    .catch(error => console.error('Error fetching data:', error));
+    }
+    else if (key === 'gFinanceData') {
+        const newsResults = data.news_results;
+        const stats = data.stats;
+        const abouts = data.abouts;
+        
+        // Process and display the data (GFinance)
+        for (let i = 0; i < innerPs.length; i++) {
+            const newListItem = document.createElement('li');
+            newListItem.className = 'stocks-info-item';
+
+            const ticketTitle = document.createElement('h1');
+            ticketTitle.textContent = tickerSymbols[i];
+
+            const newsContainer = createNewsSection(newsResults[i]);
+            const statsContainer = createStatsSection(stats[i]);
+            const aboutsContainer = createAboutSection(abouts[i]);
+
+            newListItem.appendChild(ticketTitle);
+            newListItem.appendChild(newsContainer);
+            newListItem.appendChild(statsContainer);
+            newListItem.appendChild(aboutsContainer);
+
+            infoUl.appendChild(newListItem);
+        }
+    }
 }
+
+// Combined function to fetch data from both YFinance and GFinance APIs
+function getDataFromAPIs(event) {
+    var innerPs = document.querySelectorAll(".innerP");
+    tickerSymbols = [];
+
+    innerPs.forEach(function(innerPara) {
+        tickerSymbols.push(innerPara.textContent);
+    });
+
+    tickerSymbols = [...new Set(tickerSymbols)];
+
+    // Load YFinance data from localStorage if available
+    const savedYFinanceData = loadDataFromLocalStorage(yFinanceKey);
+
+    if (savedYFinanceData) {
+        // Process YFinance data if found
+        processData(savedYFinanceData, yFinanceKey, event);
+        // Fetch GFinance data
+        getDataFromGFinanceAPI(event, gFinanceKey);
+    } else {
+        // Fetch YFinance data if not found in localStorage
+        const yFinanceQueryString = tickerSymbols.map(vals => "ticker=" + vals).join('&');
+
+        fetch('/get_stock_data/?' + yFinanceQueryString)
+        .then(response => response.json())
+        .then(data => {
+            // Fetch GFinance data
+            getDataFromGFinanceAPI(event, gFinanceKey);
+            // Save and process YFinance data
+            saveDataToLocalStorage(yFinanceKey, data);
+            processData(data, yFinanceKey, event);
+        })
+        .catch(error => console.error('Error fetching YFinance data:', error));
+    }
+
+}
+
+// Fetch GFinance data with localStorage support
+function getDataFromGFinanceAPI(event, key) {
+    var innerPs = document.querySelectorAll(".innerP");
+    tickerSymbols = [];
+
+    innerPs.forEach(function(innerPara) {
+        tickerSymbols.push(innerPara.textContent);
+    });
+
+    tickerSymbols = [...new Set(tickerSymbols)];
+    console.log(innerPs)
+
+    const savedGFinanceData = loadDataFromLocalStorage(key);
+
+    if (savedGFinanceData) {
+        // Process GFinance data if found
+        processData(savedGFinanceData, gFinanceKey, event);
+    } else {
+        const queryString = tickerSymbols.map(vals => "ticker=" + vals).join('&');
+
+        fetch('/get_stock_news/?' + queryString)
+        .then(response => response.json())
+        .then(data => {
+            // Save and process GFinance data
+            saveDataToLocalStorage(key, data);
+            processData(data, gFinanceKey, event);
+        })
+        .catch(error => console.error('Error fetching GFinance data:', error));
+    }
+}
+
+// Function to clear all saved data from localStorage
+function clearAllLocalStorage() {
+    localStorage.removeItem('yFinanceData');
+    localStorage.removeItem('gFinanceData');
+}
+
+function clearNewsFeed() {
+    // Select the element with the class name 'stocks-info-list'
+    const stocksInfoList = document.querySelector('.stocks-info-list');
+
+    // Check if the element exists
+    if (stocksInfoList) {
+        // Remove all child elements
+        while (stocksInfoList.firstChild) {
+            stocksInfoList.removeChild(stocksInfoList.firstChild);
+        }
+    }
+}
+
+// Example of how to trigger data fetching with a refresh button
+function onPageLoad(event) {
+    getDataFromAPIs(event);
+}
+
+// Call onPageLoad function on window load
+window.onload = onPageLoad;
 
 function cancelListItem(event) {
     const listItem = event.target.parentNode;
@@ -385,7 +493,9 @@ function cancelListItem(event) {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromYFinanceAPI(event);
+    clearAllLocalStorage();
+    clearNewsFeed();
+    getDataFromAPIs(event);
 }
 
 function cancelListItem2(event) {
@@ -404,17 +514,11 @@ function cancelListItem2(event) {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromYFinanceAPI(event);
-    }
+    clearAllLocalStorage();
+    clearNewsFeed();
+    getDataFromAPIs(event);
+}
 
-dropdownButton.addEventListener("click", function() {
-    dropdownContent.classList.toggle("active");
-    if (dropdownContent.style.display === "block") {
-        dropdownContent.style.display = "none";
-    } else {
-        dropdownContent.style.display = "block";
-    }
-});
         
 var innerCancelButtons = document.querySelectorAll(".innerButton");
 var innerPs = document.querySelectorAll(".innerP");
@@ -444,11 +548,13 @@ addTickerButton.addEventListener("click", function(event) {
     }
 
     const newLi = document.createElement('li');
+    newLi.className = "innerLi";
     const newP = document.createElement('p');
 
     const cancelButton = document.createElement('button');
     cancelButton.textContent = 'Cancel';
     cancelButton.addEventListener('click', cancelListItem);
+    cancelButton.className = 'innerButton';
 
     newLi.style.display = 'flex';
     newLi.style.alignItems = "center";
@@ -471,11 +577,10 @@ addTickerButton.addEventListener("click", function(event) {
     .then(response => response.json())
     .catch(error => console.error('Error fetching data:', error));
 
-    getDataFromYFinanceAPI(event);
+    clearAllLocalStorage();
+    clearNewsFeed();
+    getDataFromAPIs(event);
 })
-
-Chart.defaults.plugins.tooltip.format = 'YYYY-MM-DD';
-sendDataButton.addEventListener("click", getDataFromYFinanceAPI);
 
 //Bubble Menu
 function updateActiveBubble() {
