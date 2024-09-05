@@ -319,7 +319,6 @@ function loadDataFromLocalStorage(key) {
 // Process and display the data from both APIs, and generate graphs
 function processData(data, key, event) {
     var innerPs = document.querySelectorAll(".innerP");
-    console.log(data)
     if (key === 'yFinanceData') {
         const closePrices = data.close_prices;
         const volumes = data.volumes_data;
@@ -430,7 +429,6 @@ function getDataFromGFinanceAPI(event, key) {
     });
 
     tickerSymbols = [...new Set(tickerSymbols)];
-    console.log(innerPs)
 
     const savedGFinanceData = loadDataFromLocalStorage(key);
 
@@ -586,7 +584,7 @@ addTickerButton.addEventListener("click", function(event) {
 function updateActiveBubble() {
   bubbles.forEach((bubble, index) => {
     if (index === currentBubble) {
-      bubble.style.backgroundColor = '#4caf50';
+      bubble.style.backgroundColor = '#024188';
     } else {
       bubble.style.backgroundColor = '#d3d3d3';
     }

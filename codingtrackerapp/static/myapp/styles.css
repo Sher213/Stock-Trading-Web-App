@@ -1,4 +1,5 @@
 body ul{
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
 }
@@ -156,7 +157,7 @@ h1 {
     width: 25px;
     height: 25px;
     border-radius: 50%;
-    background: #4caf50;
+    background: #024188;
     cursor: pointer;
   }
   
@@ -182,7 +183,7 @@ h1 {
   
   #left-btn,
   #right-btn {
-    background-color: #4caf50;
+    background-color: #024188;
     color: white;
     border: none;
     border-radius: 5px;

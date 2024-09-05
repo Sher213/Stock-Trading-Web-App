@@ -8,6 +8,8 @@ from .models import UsersTickers, Ticker
 import yfinance as yf
 from serpapi import GoogleSearch
 import csv
+from datetime import datetime
+import pytz
 import re
 import configparser
 
@@ -32,7 +34,7 @@ def get_stock_news(request):
             #Google API
             params = {
                 "engine": "google_finance",
-                "q": t + ":NYSE",
+                "q": t + ":NASDAQ",
                 "api_key": config['DEFAULT']['GOOGLE_FINANCE_API_KEY']
             }
 
@@ -40,7 +42,11 @@ def get_stock_news(request):
             results = search.get_dict()
 
             if 'news_results' in results:
-                news_results.append(results['news_results'])
+                if 'link' in results[0]:
+                    news_results.append(results['news_results'])
+                else:
+                    news_items = news_results[0]['items']
+                    news_results.append(news_items)
             else:
                 news_results.append([{"title" : "No News Available."}])
             if 'knowledge_graph' in results:
@@ -75,6 +81,12 @@ def get_stock_data(request):
         for h in timeSeries:
             close_prices.append(h['Close'].tolist())
             volumes.append(h['Volume'].tolist())
+
+        # Parse the datetime string into a datetime object
+        dates = [datetime.fromisoformat(str(date)) for date in dates]
+
+        # Format the datetime object into the desired format
+        dates = [date.strftime("%Y-%m-%d") for date in dates]
         data = {'dates': dates, 'close_prices': close_prices, 'volumes_data' : volumes}
 
         return JsonResponse(data)
