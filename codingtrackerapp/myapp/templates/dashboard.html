@@ -14,7 +14,11 @@
             color: #333;
         }
 
-        .content {
+        .main-content-cont {
+            display: grid;
+            grid-auto-columns: 23vh;
+            grid-auto-rows: 17vw;
+            grid-gap: 70px;
             margin-left: 20px;
             margin-right: 20px;
         }
@@ -37,6 +41,7 @@
 
         /* Dropdown styling */
         #tickerDropdown, #addTicker {
+            max-width: 150px;
             padding: 10px;
             font-size: 16px;
             border: 2px solid #2b4a9e;
@@ -58,6 +63,38 @@
             list-style-type: none;
             padding: 0;
             margin: 0;
+        }
+
+        #ticker-container {
+            overflow-y: auto;
+            border: solid;
+            border-color: #0056b3;
+            padding: 10px;
+            grid-row: span 2;
+        }
+
+        #histPrices {
+            max-width: 60vw;
+            max-height: 40vh;
+        }
+
+        #gallery-container {
+            grid-column-start: 2;
+            grid-row-start: 2;
+            display: flex;
+        }
+
+        #volumeChart {
+            height: 40vh;
+        }
+
+        #info-container {
+            border: solid;
+            border-color: black;
+            width: 40vw;
+            height: 37vh;
+            grid-column-start: 5;
+            grid-row-start: 2;
         }
 
         .innerLi {
@@ -238,49 +275,84 @@
             </ul>
         </nav>
     </header>
-    <div class="content">
-        <h1>Time Series Plot</h1>
-        <div class="collapsible-title"><h3>Select Tickers</h3></div>
-        <div class="selector-container">
-            <select class="currTicker" id="tickerDropdown">
-                {% for ticker in tickers %}
-                <option>{{ ticker }}</option>
+    <h1 style="margin: 20px;">Time Series Plot</h1>
+    <div class="main-content-cont">
+        <div id="ticker-container">
+            <div class="collapsible-title"><h3>Select Tickers</h3></div>
+            <div class="selector-container">
+                <input list="tickers" id="tickerDropdown" class="currTicker" placeholder="Type or select...">
+                <datalist id="tickers">
+                    {% for ticker in tickers %}
+                    <option value="{{ ticker }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+            <ul id="parentListTickers">
+                {% for ticker in user_tickers %}
+                    <li class="innerLi">
+                        <p class="innerP">{{ ticker }}</p>
+                        <button class="innerButton">Cancel</button>
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
+            <button id="addTicker">ADD</button>
         </div>
-        <ul id="parentListTickers">
-            {% for ticker in user_tickers %}
-                <li class="innerLi">
-                    <p class="innerP">{{ ticker }}</p>
-                    <button class="innerButton">Cancel</button>
-                </li>
-            {% endfor %}
-        </ul>
-        <button id="addTicker">ADD</button>
         <canvas id="histPrices"></canvas>
-        <h1>Last Traded Volume</h1>
-        <div class="bubble-container">
-            <button id="left-btn">&lt;</button>
-            <div class="bubbles">
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
+        <div id="gallery-container">
+            <div style="display: flex; flex-direction: column;">
+                <h1>Last Traded Volume</h1>
+                <div class="bubble-container">
+                    <button id="left-btn">&lt;</button>
+                    <div class="bubbles">
+                    <div class="bubble"></div>
+                    <div class="bubble"></div>
+                    <div class="bubble"></div>
+                    </div>
+                    <button id="right-btn">&gt;</button>
+                </div>
+                <div class="slider-container" style="width: max-content;">
+                    <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+                    <p id="slider-value">100%</p>
+                </div>
             </div>
-            <button id="right-btn">&gt;</button>
-        </div>
-        <div class="slider-container">
-            <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
-            <p id="slider-value">100%</p>
-        </div>
-        <div style="height: 75vh; width: 95vw; display: flex; justify-content: center;">
-            <canvas id="volumeChart"></canvas>
-            <div class="info-container" style="opacity: 0;">
-                <ul class="stocks-info-list">
-                </ul>
+            <div>
+                <canvas id="volumeChart"></canvas>
             </div>
+        </div>
+        <div class="info-container" id="info-container" style="opacity: 1;">
+            <div id="spinner" style="display: none; margin-top: 20px;">
+                <div class="loader"></div>
+            </div>
+            <ul class="stocks-info-list" id="stocks-info-list">
+            </ul>
         </div>
     </div>
     <script src="{% static 'myapp/dashboard.js' %}"></script>
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const stocksList = document.getElementById("stocks-info-list");
+        const spinner = document.getElementById("spinner");
+    
+        // Function to check if the list is empty
+        function checkList() {
+            if (stocksList.children.length === 0) {
+                spinner.style.display = "block"; // Show spinner
+            } else {
+                spinner.style.display = "none"; // Hide spinner
+            }
+        }
+    
+        // Call the function initially
+        checkList();
+
+        // Observer to watch for changes in the list
+        const observer = new MutationObserver(function(mutationsList, observer) {
+            checkList(); // Call the checkList function when changes are detected
+        });
+
+        // Start observing the list for changes
+        observer.observe(stocksList, { childList: true });
+    });
+</script>
 </html>

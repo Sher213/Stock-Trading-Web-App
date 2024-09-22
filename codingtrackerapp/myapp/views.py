@@ -12,6 +12,7 @@ from datetime import datetime
 import pytz
 import re
 import configparser
+import json
 
 config = configparser.ConfigParser()
 config.read('D:\coding-work\stock-tracker-web-app\codingtrackerapp\myapp\config.ini')
@@ -34,19 +35,15 @@ def get_stock_news(request):
             #Google API
             params = {
                 "engine": "google_finance",
-                "q": t + ":NASDAQ",
+                "q": t + ":NYSE",
                 "api_key": config['DEFAULT']['GOOGLE_FINANCE_API_KEY']
             }
 
             search = GoogleSearch(params)
             results = search.get_dict()
-
+            
             if 'news_results' in results:
-                if 'link' in results[0]:
                     news_results.append(results['news_results'])
-                else:
-                    news_items = news_results[0]['items']
-                    news_results.append(news_items)
             else:
                 news_results.append([{"title" : "No News Available."}])
             if 'knowledge_graph' in results:
@@ -61,7 +58,7 @@ def get_stock_news(request):
         data = {'news_results': news_results, 'stats': stats, 'abouts' : abouts}
         return JsonResponse(data)
     except Exception as e:
-        print(e)
+        print("Error", e)
         return JsonResponse({'error': str(e)})
 
 #REQUEST STOCK DATA
@@ -91,7 +88,7 @@ def get_stock_data(request):
 
         return JsonResponse(data)
     except Exception as e:
-        print(e)
+        print("Error", e)
         return JsonResponse({'error': str(e)})
 
 #GET DASHBOARD WITH TICKERS

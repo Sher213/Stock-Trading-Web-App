@@ -71,7 +71,6 @@ function generateGraphs(event) {
 
     if (currentBubble == 0) {
         sliderCont.style.opacity = 1;
-        infoCont.style.opacity = 0;
         if (Chart.getChart("volumeChart")) {
             Chart.getChart("volumeChart")?.destroy();
         }
@@ -86,7 +85,6 @@ function generateGraphs(event) {
     }
     else if (currentBubble == 1) {
         sliderCont.style.opacity = 0;
-        infoCont.style.opacity = 0;
         if (Chart.getChart("volumeChart")) {
             Chart.getChart("volumeChart")?.destroy();
         }
@@ -115,7 +113,6 @@ function generateGraphs(event) {
     }
     else if (currentBubble == 2) {
         sliderCont.style.opacity = 0;
-        infoCont.style.opacity = 0;
         if (Chart.getChart("volumeChart")) {
             Chart.getChart("volumeChart")?.destroy();
         }
@@ -141,13 +138,6 @@ function generateGraphs(event) {
                 }]
             }
         });
-    }
-    else if (currentBubble == 3) {
-        sliderCont.style.opacity = 0;
-        infoCont.style.opacity = 1;
-        if (Chart.getChart("volumeChart")) {
-            Chart.getChart("volumeChart")?.destroy();
-        }
     }
 }
 
@@ -444,6 +434,7 @@ function getDataFromGFinanceAPI(event, key) {
             // Save and process GFinance data
             saveDataToLocalStorage(key, data);
             processData(data, gFinanceKey, event);
+            console.log(data);
         })
         .catch(error => console.error('Error fetching GFinance data:', error));
     }
